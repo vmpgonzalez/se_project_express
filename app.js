@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const userRoutes = require("./routes/users");
 const clothingItemRoutes = require("./routes/clothingItems");
+const { NOT_FOUND } = require("./utils/errors");
 
 const app = express();
 const PORT = 3001;
@@ -19,7 +20,7 @@ app.use("/users", userRoutes);
 app.use("/items", clothingItemRoutes);
 
 app.use((req, res) => {
-  res.status(404).send({ message: "Route not found" });
+  res.status(NOT_FOUND).send({ message: "Route not found" });
 });
 
 mongoose
