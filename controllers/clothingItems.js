@@ -29,15 +29,29 @@ module.exports.createClothingItem = (req, res) => {
 };
 
 module.exports.deleteClothingItem = (req, res) => {
-  ClothingItem.findByIdAndDelete(req.params.itemId)
+  const { itemId } = req.params;
+
+  ClothingItem.findById(itemId)
     .orFail(() => new Error("ItemNotFound"))
-    .then((item) => res.send(item))
+    .then((item) => {
+      if (item.owner.toString() !== req.user._id) {
+        const err = new Error("Forbidden");
+        err.name = "Forbidden";
+        throw err;
+      }
+      return item.deleteOne();
+    })
+    .then(() => res.send({ message: "Item deleted" }))
     .catch((err) => {
       console.error(err);
       if (err.message === "ItemNotFound") {
         res.status(NOT_FOUND).send({ message: "Item not found" });
       } else if (err.name === "CastError") {
         res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
+      } else if (err.name === "Forbidden") {
+        res
+          .status(403)
+          .send({ message: "You cannot delete someone else’s item" });
       } else {
         res.status(INTERNAL_SERVER_ERROR).send({ message: "Server error" });
       }
