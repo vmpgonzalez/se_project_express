@@ -12,7 +12,9 @@ const SALT_ROUNDS = 10;
 
 module.exports.createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
-
+  if (!name || !avatar || !email || !password) {
+    return res.status(BAD_REQUEST).send({ message: "All fields are required" });
+  }
   bcrypt
     .hash(password, SALT_ROUNDS)
     .then((hash) => User.create({ name, avatar, email, password: hash }))
@@ -24,7 +26,7 @@ module.exports.createUser = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.code === 11000) {
-        return res.status(409).send({ message: "Email already in use" }); // conflict
+        return res.status(409).send({ message: "Email already in use" });
       }
       if (err.name === "ValidationError") {
         return res.status(BAD_REQUEST).send({ message: "Invalid data" });

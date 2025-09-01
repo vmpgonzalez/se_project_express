@@ -1,6 +1,7 @@
 const ClothingItem = require("../models/clothingItem");
 const {
   BAD_REQUEST,
+  FORBIDDEN,
   NOT_FOUND,
   INTERNAL_SERVER_ERROR,
 } = require("../utils/errors");
@@ -10,21 +11,25 @@ module.exports.getClothingItems = (req, res) => {
     .then((items) => res.send(items))
     .catch((err) => {
       console.error(err);
-      res.status(INTERNAL_SERVER_ERROR).send({ message: "Server error" });
+      res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error occurred on the server" });
     });
 };
 
 module.exports.createClothingItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
+
   ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => res.status(201).send(item))
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
-        res.status(BAD_REQUEST).send({ message: "Invalid data" });
-      } else {
-        res.status(INTERNAL_SERVER_ERROR).send({ message: "Server error" });
+        return res.status(BAD_REQUEST).send({ message: "Invalid data" });
       }
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error occurred on the server" });
     });
 };
 
@@ -45,16 +50,19 @@ module.exports.deleteClothingItem = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.message === "ItemNotFound") {
-        res.status(NOT_FOUND).send({ message: "Item not found" });
-      } else if (err.name === "CastError") {
-        res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
-      } else if (err.name === "Forbidden") {
-        res
-          .status(403)
-          .send({ message: "You cannot delete someone else’s item" });
-      } else {
-        res.status(INTERNAL_SERVER_ERROR).send({ message: "Server error" });
+        return res.status(NOT_FOUND).send({ message: "Item not found" });
       }
+      if (err.name === "CastError") {
+        return res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
+      }
+      if (err.name === "Forbidden") {
+        return res
+          .status(FORBIDDEN)
+          .send({ message: "You cannot delete someone else’s item" });
+      }
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error occurred on the server" });
     });
 };
 
@@ -69,12 +77,14 @@ module.exports.likeItem = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.message === "ItemNotFound") {
-        res.status(NOT_FOUND).send({ message: "Item not found" });
-      } else if (err.name === "CastError") {
-        res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
-      } else {
-        res.status(INTERNAL_SERVER_ERROR).send({ message: "Server error" });
+        return res.status(NOT_FOUND).send({ message: "Item not found" });
       }
+      if (err.name === "CastError") {
+        return res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
+      }
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error occurred on the server" });
     });
 };
 
@@ -89,11 +99,13 @@ module.exports.dislikeItem = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.message === "ItemNotFound") {
-        res.status(NOT_FOUND).send({ message: "Item not found" });
-      } else if (err.name === "CastError") {
-        res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
-      } else {
-        res.status(INTERNAL_SERVER_ERROR).send({ message: "Server error" });
+        return res.status(NOT_FOUND).send({ message: "Item not found" });
       }
+      if (err.name === "CastError") {
+        return res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
+      }
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error occurred on the server" });
     });
 };

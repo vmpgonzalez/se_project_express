@@ -10,6 +10,7 @@ const { NOT_FOUND } = require("./utils/errors");
 const { createUser, login } = require("./controllers/users");
 const { getClothingItems } = require("./controllers/clothingItems");
 
+const errorHandler = require("./middlewares/errorHandler");
 const auth = require("./middlewares/auth");
 
 const PORT = process.env.PORT || 3001;
@@ -35,6 +36,8 @@ app.use("/items", clothingItemRoutes);
 app.use((req, res) => {
   res.status(NOT_FOUND).send({ message: "Route not found" });
 });
+
+app.use(errorHandler);
 
 mongoose
   .connect(MONGODB_URI)
