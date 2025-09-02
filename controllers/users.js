@@ -5,28 +5,31 @@ const {
   BAD_REQUEST,
   NOT_FOUND,
   INTERNAL_SERVER_ERROR,
+  CONFLICT,
+  UNAUTHORIZED,
 } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
 
 const SALT_ROUNDS = 10;
 
+// POST /signup
 module.exports.createUser = (req, res) => {
-  const { name, avatar, email, password } = req.body;
+  const { name, avatar, email, password } = req.body || {};
   if (!name || !avatar || !email || !password) {
     return res.status(BAD_REQUEST).send({ message: "All fields are required" });
   }
-  bcrypt
+
+  return bcrypt
     .hash(password, SALT_ROUNDS)
     .then((hash) => User.create({ name, avatar, email, password: hash }))
     .then((user) => {
       const obj = user.toObject();
       delete obj.password;
-      res.status(201).send(obj);
+      return res.status(201).send(obj);
     })
     .catch((err) => {
-      console.error(err);
       if (err.code === 11000) {
-        return res.status(409).send({ message: "Email already in use" });
+        return res.status(CONFLICT).send({ message: "Email already in use" });
       }
       if (err.name === "ValidationError") {
         return res.status(BAD_REQUEST).send({ message: "Invalid data" });
@@ -37,23 +40,41 @@ module.exports.createUser = (req, res) => {
     });
 };
 
+// POST /signin
 module.exports.login = (req, res) => {
-  const { email, password } = req.body;
+  const { email, password } = req.body || {};
+
+  if (!email || !password) {
+    return res
+      .status(BAD_REQUEST)
+      .send({ message: "Email and password are required" });
+  }
 
   return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
-      res.send({ token });
+      return res.send({ token });
     })
     .catch((err) => {
-      console.error(err);
-      res.status(401).send({ message: "Incorrect email or password" });
+      const msg = (err && err.message) || "";
+      if (
+        err.statusCode === UNAUTHORIZED ||
+        msg.includes("Incorrect email or password")
+      ) {
+        return res
+          .status(UNAUTHORIZED)
+          .send({ message: "Incorrect email or password" });
+      }
+      return res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "Server error" });
     });
 };
 
-module.exports.getCurrentUser = (req, res) => {
+// GET /users/me
+module.exports.getCurrentUser = (req, res) =>
   User.findById(req.user._id)
     .then((user) => {
       if (!user) {
@@ -62,7 +83,6 @@ module.exports.getCurrentUser = (req, res) => {
       return res.send(user);
     })
     .catch((err) => {
-      console.error(err);
       if (err.name === "CastError") {
         return res.status(BAD_REQUEST).send({ message: "Invalid user ID" });
       }
@@ -70,11 +90,11 @@ module.exports.getCurrentUser = (req, res) => {
         .status(INTERNAL_SERVER_ERROR)
         .send({ message: "Server error" });
     });
-};
 
+// PATCH /users/me
 module.exports.updateUser = (req, res) => {
-  const { name, avatar } = req.body;
-  User.findByIdAndUpdate(
+  const { name, avatar } = req.body || {};
+  return User.findByIdAndUpdate(
     req.user._id,
     { name, avatar },
     { new: true, runValidators: true }
@@ -86,7 +106,6 @@ module.exports.updateUser = (req, res) => {
       return res.send(user);
     })
     .catch((err) => {
-      console.error(err);
       if (err.name === "ValidationError") {
         return res.status(BAD_REQUEST).send({ message: "Invalid data" });
       }
