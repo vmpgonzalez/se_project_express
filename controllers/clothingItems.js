@@ -9,8 +9,7 @@ const {
 module.exports.getClothingItems = (req, res) => {
   ClothingItem.find({})
     .then((items) => res.send(items))
-    .catch((err) => {
-      console.error(err);
+    .catch(() => {
       res
         .status(INTERNAL_SERVER_ERROR)
         .send({ message: "An error occurred on the server" });
@@ -23,7 +22,6 @@ module.exports.createClothingItem = (req, res) => {
   ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => res.status(201).send(item))
     .catch((err) => {
-      console.error(err);
       if (err.name === "ValidationError") {
         return res.status(BAD_REQUEST).send({ message: "Invalid data" });
       }
@@ -48,7 +46,6 @@ module.exports.deleteClothingItem = (req, res) => {
     })
     .then(() => res.send({ message: "Item deleted" }))
     .catch((err) => {
-      console.error(err);
       if (err.message === "ItemNotFound") {
         return res.status(NOT_FOUND).send({ message: "Item not found" });
       }
@@ -75,7 +72,6 @@ module.exports.likeItem = (req, res) => {
     .orFail(() => new Error("ItemNotFound"))
     .then((item) => res.send(item))
     .catch((err) => {
-      console.error(err);
       if (err.message === "ItemNotFound") {
         return res.status(NOT_FOUND).send({ message: "Item not found" });
       }
@@ -97,7 +93,6 @@ module.exports.dislikeItem = (req, res) => {
     .orFail(() => new Error("ItemNotFound"))
     .then((item) => res.send(item))
     .catch((err) => {
-      console.error(err);
       if (err.message === "ItemNotFound") {
         return res.status(NOT_FOUND).send({ message: "Item not found" });
       }
