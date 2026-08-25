@@ -4,96 +4,183 @@ This is the back-end server for the **WTWR (What to Wear?)** application — a w
 
 ## Features
 
-- 🧍‍♂️ **User Management**
+### 🧍‍♂️ User Management
 
-  - User signup with email + password (passwords are hashed with bcrypt).
-  - User signin with JWT authentication (7-day expiration).
-  - Retrieve the current logged-in user.
-  - Update user profile (name, avatar only).
+- User signup with email and password (passwords are securely hashed with bcrypt).
+- User signin with JWT authentication (7-day expiration).
+- Retrieve the current logged-in user.
+- Update user profile (name and avatar).
 
-- 🔐 **Authorization**
+### 🔐 Authorization
 
-  - All routes except `POST /signup`, `POST /signin`, and `GET /items` are protected with JWT-based auth middleware.
-  - Invalid or missing tokens return proper 401 JSON responses.
+- All routes except `POST /signup`, `POST /signin`, and `GET /items` are protected with JWT authentication middleware.
+- Invalid or missing tokens return proper 401 Unauthorized JSON responses.
 
-- 👕 **Clothing Items API**
+### 👕 Clothing Items API
 
-  - Add new clothing items (protected).
-  - Retrieve all clothing items (public).
-  - Like/dislike clothing items (protected).
-  - Delete clothing items (only by owner; others get 403).
+- Add new clothing items (protected).
+- Retrieve all clothing items (public).
+- Like and unlike clothing items (protected).
+- Delete clothing items (only the item's owner may delete).
 
-- ⚠️ **Error Handling**
+### ⚠️ Error Handling
 
-  - Centralized error-handling middleware that returns JSON (never HTML).
-  - Uses consistent status codes: 400, 401, 403, 404, 409, 500.
+- Centralized error-handling middleware.
+- Returns JSON responses for all errors.
+- Uses consistent HTTP status codes:
+  - 400 Bad Request
+  - 401 Unauthorized
+  - 403 Forbidden
+  - 404 Not Found
+  - 409 Conflict
+  - 500 Internal Server Error
 
-- 🌐 **MongoDB Database Integration**
+### 🌐 MongoDB Integration
 
-  - Data stored and managed in MongoDB with Mongoose ODM.
-  - Schema validation for users and clothing items.
+- Data is stored using MongoDB.
+- Mongoose is used for schema validation and database operations.
 
-- 🧪 **Validation**
-  - Email and URL validation with validator.js.
-  - Schema validators ensure correct input formats.
+### 🧪 Validation
 
-## Technologies Used
+- Email and URL validation using **validator.js**.
+- Request validation using **Celebrate/Joi**.
+- Schema validation through Mongoose.
 
-- **Node.js** – Runtime for the server.
-- **Express.js** – Routing, middleware, and server logic.
-- **MongoDB & Mongoose** – Database and schema modeling.
-- **JWT (jsonwebtoken)** – For secure user authentication.
-- **bcryptjs** – For hashing user passwords.
-- **Validator.js** – Input validation.
-- **dotenv** – Manage environment variables securely.
-- **cors** – Enable cross-origin requests.
-- **ESLint** – Maintain code quality.
-- **Nodemon** – Hot reload during development.
+### 📝 Logging
 
-## Getting Started
+- Request logging with **Winston** and **express-winston**.
+- Error logging to a separate log file.
 
-### Install dependencies
+---
+
+# Technologies Used
+
+- Node.js
+- Express.js
+- MongoDB
+- Mongoose
+- JSON Web Token (JWT)
+- bcryptjs
+- Celebrate
+- Joi
+- validator.js
+- dotenv
+- cors
+- Winston
+- express-winston
+- ESLint
+- Nodemon
+
+---
+
+# Getting Started
+
+## Install dependencies
 
 ```bash
 npm install
 ```
 
-### Run the server
+## Run the server
 
 ```bash
 npm start
 ```
 
-### Run in development mode (with hot reload)
+## Run in development mode
 
 ```bash
 npm run dev
 ```
 
-## Environment variables
+## Run ESLint
 
 ```bash
+npm run lint
+```
+
+---
+
+# Environment Variables
+
+Create a `.env` file with:
+
+```env
 PORT=3001
 MONGODB_URI=mongodb://127.0.0.1:27017/wtwr_db
 JWT_SECRET=your-secret-key
 ```
 
-## API Endpoints list
+---
 
-### Auth
+# API Endpoints
 
-- POST /signup — Register a new user
-- POST /signin — Login and receive a JWT
+## Authentication
 
-### Users
+| Method | Endpoint  | Description             |
+| ------ | --------- | ----------------------- |
+| POST   | `/signup` | Register a new user     |
+| POST   | `/signin` | Login and receive a JWT |
 
-- GET /users/me — Get current user (requires JWT)
-- PATCH /users/me — Update current user profile (requires JWT)
+## Users
 
-### Items
+| Method | Endpoint    | Description                   |
+| ------ | ----------- | ----------------------------- |
+| GET    | `/users/me` | Get current user              |
+| PATCH  | `/users/me` | Update current user's profile |
 
-- GET /items — Get all clothing items (public)
-- POST /items — Create a clothing item (requires JWT)
-- DELETE /items/:itemId — Delete an item (owner only, requires JWT)
-- PUT /items/:itemId/likes — Like an item (requires JWT)
-- DELETE /items/:itemId/likes — Remove like (requires JWT)
+## Clothing Items
+
+| Method | Endpoint               | Description                 |
+| ------ | ---------------------- | --------------------------- |
+| GET    | `/items`               | Get all clothing items      |
+| POST   | `/items`               | Create a clothing item      |
+| PUT    | `/items/:itemId/likes` | Like an item                |
+| DELETE | `/items/:itemId/likes` | Remove a like               |
+| DELETE | `/items/:itemId`       | Delete an item (owner only) |
+
+---
+
+# Live Application
+
+## Frontend
+
+**Current HTTP URL**
+
+http://victorpachecog.strangled.net
+
+**HTTPS URL (available once SSL certificate is issued)**
+
+https://victorpachecog.strangled.net
+
+## Backend API
+
+**Current HTTP URL**
+
+http://api.victorpachecog.strangled.net
+
+**HTTPS URL (available once SSL certificate is issued)**
+
+https://api.victorpachecog.strangled.net
+
+> **Note:** HTTPS is currently pending SSL certificate issuance due to a Let's Encrypt rate limit on the shared `strangled.net` domain. Once the certificate is issued, the HTTPS links above will become active.
+
+---
+
+# Frontend Repository
+
+https://github.com/vmpgonzalez/se_project_react
+
+---
+
+# Project Pitch Video
+
+Project presentation video:
+
+**Add your Google Drive or YouTube link here after recording your project walkthrough.**
+
+---
+
+# Author
+
+Victor Pacheco Gonzalez
